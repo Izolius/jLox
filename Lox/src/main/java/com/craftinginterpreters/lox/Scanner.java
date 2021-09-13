@@ -6,11 +6,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import static com.craftinginterpreters.lox.TokenType.*;
-import static java.lang.Character.isDigit;
 
 public class Scanner {
     private static final Map<String, TokenType> keywords;
+
     static {
         keywords = new HashMap<>();
         keywords.put("and", AND);
@@ -55,16 +56,36 @@ public class Scanner {
     private void scanToken() {
         char c = advance();
         switch (c) {
-            case '(': addToken(LEFT_PAREN); break;
-            case ')': addToken(RIGHT_PAREN); break;
-            case '{': addToken(LEFT_BRACE); break;
-            case '}': addToken(RIGHT_BRACE); break;
-            case ',': addToken(COMMA); break;
-            case '.': addToken(DOT); break;
-            case '-': addToken(MINUS); break;
-            case '+': addToken(PLUS); break;
-            case ';': addToken(SEMICOLON); break;
-            case '*': addToken(STAR); break;
+            case '(':
+                addToken(LEFT_PAREN);
+                break;
+            case ')':
+                addToken(RIGHT_PAREN);
+                break;
+            case '{':
+                addToken(LEFT_BRACE);
+                break;
+            case '}':
+                addToken(RIGHT_BRACE);
+                break;
+            case ',':
+                addToken(COMMA);
+                break;
+            case '.':
+                addToken(DOT);
+                break;
+            case '-':
+                addToken(MINUS);
+                break;
+            case '+':
+                addToken(PLUS);
+                break;
+            case ';':
+                addToken(SEMICOLON);
+                break;
+            case '*':
+                addToken(STAR);
+                break;
             case '!':
                 addToken(match('=') ? BANG_EQUAL : BANG);
                 break;
@@ -81,6 +102,8 @@ public class Scanner {
                 if (match('/')) {
                     // A comment goes until the end of the line.
                     while (peek() != '\n' && !isAtEnd()) advance();
+                } else if (match('*')) {
+                    comment();
                 } else {
                     addToken(SLASH);
                 }
@@ -92,8 +115,10 @@ public class Scanner {
                 break;
             case '\n':
                 line++;
-                break; 
-            case '"': string(); break;
+                break;
+            case '"':
+                string();
+                break;
             default:
                 if (isDigit(c)) {
                     number();
@@ -103,6 +128,29 @@ public class Scanner {
                     Lox.error(line, "Unexpected character.");
                 }
                 break;
+        }
+    }
+
+    private void comment() {
+        while (true) {
+            char c = advance();
+            switch (c) {
+                case '*':
+                    if (match('/')) {
+                        return;
+                    }
+                    break;
+                case '/':
+                    if (match('*')) {
+                        comment();
+                    }
+                    break;
+                case '\n':
+                    line++;
+                    break;
+                case '\0':
+                    return;
+            }
         }
     }
 
@@ -119,6 +167,7 @@ public class Scanner {
                 (c >= 'A' && c <= 'Z') ||
                 c == '_';
     }
+
     private boolean isAlphaNumeric(char c) {
         return isAlpha(c) || isDigit(c);
     }
@@ -176,9 +225,11 @@ public class Scanner {
         current++;
         return source.charAt(current - 1);
     }
+
     private void addToken(TokenType type) {
         addToken(type, null);
     }
+
     private void addToken(TokenType type, Object literal) {
         String text = source.substring(start, current);
         tokens.add(new Token(type, text, literal, line));

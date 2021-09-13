@@ -17,4 +17,13 @@ public class ScannerTest {
                 "2");
         assertEquals(getLines(scanner.scanTokens()), List.of(1, 4, 4));
     }
+
+    @Test
+    public void nested_comments() {
+        Scanner scanner = new Scanner("1 /*\n" +
+                "123/**/\n" +
+                "*/\n" +
+                "2");
+        assertEquals(getLines(scanner.scanTokens()), List.of(1, 4, 4));
+    }
 }

@@ -1,7 +1,10 @@
 package com.craftinginterpreters;
 
+import com.craftinginterpreters.lox.AstPrinter;
+import com.craftinginterpreters.lox.Parser;
 import com.craftinginterpreters.lox.Scanner;
 import com.craftinginterpreters.lox.Token;
+import com.craftinginterpreters.lox.ast.Expr;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -46,10 +49,12 @@ public class Lox {
     public static void run(String source) {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
-        // For now, just print the tokens.
-        for (Token token : tokens) {
-            System.out.println(token);
-        }
+        Parser parser = new Parser(tokens);
+        Expr expression = parser.parse();
+        // Stop if there was a syntax error.
+        if (hadError) return;
+        System.out.println(new AstPrinter().print(expression));
+
     }
 
     public static void error(int line, String message) {
